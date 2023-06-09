@@ -14,11 +14,10 @@ __global__ void wavelet_transform(float** transform, float** wavelets, float* wa
 
     // 畳み込み積分
     float total = 0;
-    for (int i = t; i < length - 1; ++i) {
-        total += forms[t] * lets[s][i];
+    for (int i = 0; i < length; ++i) {
+        total += waveforms[t] * wavelets[s][i];
     }
     transform[s][t] = total;
-
 }
 
 /*
