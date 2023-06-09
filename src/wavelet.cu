@@ -1,26 +1,25 @@
 /*
-    Parameters
-        transform: float**
-            Wavelet変換した結果
-        wavelets: float**
-            スケーリングした後のWavelet
-        waveform: float*
-            変換の対象となる波形
+    @brief ウェーブレット変換を行う
+    @param[out] transform Wavelet変換した結果
+    @param[in] wavelets スケーリングした後のWavelet
+    @param[in] waveform 変換の対象となる波形
+    @param[in] timeN 時刻の長さ
+    @param[in] scaleN スケールの数
 */
 __global__ void wavelet_transform(
-        float** transform, float** wavelets, float* waveform,
-        float* scales
+        float* transform, float* wavelets, float* waveform,
+        int timeN, int scaleN
     ) {
-    // threadIdx.x, blockDim.x
-    int t = threadIdx.x;    // 時間軸
-    int s = threadIdx.y;    // スケール軸
+    int t = blockDim.x * blockIdx.y + threadIdx.x;    // 時間軸
+    int s = blockDim.y * blockIdx.y + threadIdx.y;    // スケール軸
+    int idx = scaleN * s + t;
 
-    // 畳み込み積分
+    // 畳み込み積分, f(t)g(i-t)の形式
     float total = 0;
-    for (int i = 0; i < length; ++i) {
-        total += waveforms[t] * wavelets[s][i];
+    for (int i = t; i < timeN; ++i) {
+        total += waveforms[t] * wavelets[s * scaleN + i - t];
     }
-    transform[s][t] = total;
+    transform[idx] = total;
 }
 
 /*
