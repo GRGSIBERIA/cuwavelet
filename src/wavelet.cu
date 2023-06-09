@@ -1,20 +1,3 @@
-
-
-/*  畳み込みの中身
-    Parameters
-        let: float
-            waveletの値
-        form: float
-            波形の値
-*/
-__device__ float conv(float let1, float let2, float form1, float form2) {
-    return let1 * form1 + let2 * form2;
-}
-
-__device__ void convolution(float* solve, float* lets, float forms) {
-    
-}
-
 /*
     Parameters
         transform: float**
