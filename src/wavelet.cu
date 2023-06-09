@@ -7,7 +7,10 @@
         waveform: float*
             変換の対象となる波形
 */
-__global__ void wavelet_transform(float** transform, float** wavelets, float* waveform) {
+__global__ void wavelet_transform(
+        float** transform, float** wavelets, float* waveform,
+        float* scales
+    ) {
     // threadIdx.x, blockDim.x
     int t = threadIdx.x;    // 時間軸
     int s = threadIdx.y;    // スケール軸
