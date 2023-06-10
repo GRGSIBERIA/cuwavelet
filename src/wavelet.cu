@@ -7,7 +7,9 @@
     @param[in] scaleN スケールの数
 */
 __global__ void wavelet_transform(
-        float* transform, float* wavelets, float* waveform,
+        float* transform,
+        float* waveletsRe, float* waveletsIm,
+        float* waveform,
         int timeN, int scaleN
     ) {
     int t = blockDim.x * blockIdx.y + threadIdx.x;    // 時間軸
@@ -15,12 +17,21 @@ __global__ void wavelet_transform(
     int idx = scaleN * s + t;
 
     // 畳み込み積分, f(t)g(i-t)の形式
-    float total = 0;
+    float totalRe = 0;
+    float totalIm = 0;
     for (int i = t; i < timeN; ++i) {
-        total += waveforms[t] * wavelets[s * scaleN + i - t];
+        totalRe += waveforms[t] * waveletsRe[s * scaleN + i - t];
+        totalIm += waveforms[t] * waveletsIm[s * scaleN + i - t];
     }
-    transform[idx] = total;
+    
+    transformRe[idx] = sqrt(totalRe * totalRe + totalIm * totalIm);
 }
+
+/*
+z1 * z2 = (x1*x2-y1*y2)+(x1*y2+x2*y1)i
+このとき、z2の虚部がないy2 = 絶対値を取っているとき、
+z1 * z2 = (R1*R2)+(R2*I1)i
+*/
 
 /*
 有毛細胞の数は11,500個
