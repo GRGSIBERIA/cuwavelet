@@ -24,7 +24,7 @@ __global__ void wavelet_transform(
         totalIm += waveforms[t] * waveletsIm[s * scaleN + i - t];
     }
     
-    transformRe[idx] = sqrt(totalRe * totalRe + totalIm * totalIm);
+    transform[idx] = sqrt(totalRe * totalRe + totalIm * totalIm);
 }
 
 /*
