@@ -6,16 +6,13 @@ from scipy.signal import morlet
 import matplotlib.pyplot as plt
 
 class PyWavelet:
-    def __init__(self, sampling_freqency: int, intervals: List) -> None:
-        self.__fs = sampling_freqency
+    def __init__(self, window_length: int, intervals: List) -> None:
         self.__waveletsRe = []
         self.__waveletsIm = []
+        self.__window_length = window_length
 
         for interval in intervals:
-            length = sampling_freqency / interval
-            length = np.round(length)
-
-            wavelet = morlet(length, 5, 1)
+            wavelet = morlet(window_length, 5, interval)
             re = [x.real for x in wavelet]
             im = [x.imag for x in wavelet]
             
@@ -31,7 +28,7 @@ if __name__ == "__main__":
         
         length = 44100. / i
         print(length)
-        x = morlet(int(length), 5, 1)
+        x = morlet(44100, 5, i)
         print(x[0].real, x[0].imag)
         plt.plot(x, marker="x", label=str(i))
 
