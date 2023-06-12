@@ -6,13 +6,12 @@
     @param[in] waveform 変換の対象となる波形
     @param[in] timeN 時刻の長さ
     @param[in] scaleN スケールの数
-    @param[in] waveletLength Waveletの長さ
 */
 __global__ void wavelet_transform(
         float* transform,
         float* waveletsRe, float* waveletsIm,
         float* waveform,
-        int timeN, int scaleN, int* waveletLength
+        int timeN, int scaleN
     ) {
     int t = blockDim.x * blockIdx.y + threadIdx.x;    // 時間軸
     int s = blockDim.y * blockIdx.y + threadIdx.y;    // スケール軸
@@ -22,7 +21,7 @@ __global__ void wavelet_transform(
     float totalRe = 0;
     float totalIm = 0;
     int si = s * scaleN;
-    for (int i = t; i < timeN, i < waveletLength[s]; ++i) {
+    for (int i = t; i < timeN; ++i) {
         totalRe += waveforms[t] * waveletsRe[si + i - t];
         totalIm += waveforms[t] * waveletsIm[si + i - t];
     }
