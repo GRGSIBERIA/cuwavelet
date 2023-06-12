@@ -40,6 +40,12 @@ class PyWavelet:
         
         self.__func = self.__module.get_function("wavelet_transform")
 
+        self.__gpuRe = cuda.In(self.__waveletsRe)
+        self.__gpuIm = cuda.In(self.__waveletsIm)
+        
+        self.__gpu_window_length = cuda.In(self.__window_length)
+        self.__gpu_scale_size = cuda.In(self.__wavelet_scales)
+
     
     def compute(self, compute_waveform):
         # 循環リストの処理
@@ -60,9 +66,9 @@ class PyWavelet:
 
         self.__func(
             cuda.Out(self.__resultRe), cuda.Out(self.__resultIm),
-            cuda.In(self.__waveletsRe), cuda.In(self.__waveletsIm),
+            self.__gpuRe, self.__gpuIm,
             cuda.In(self.__waveform),
-            cuda.In(self.__window_length), cuda.In(self.__wavelet_scales),
+            self.__gpu_window_length, self.__gpu_scale_size,
             block=(self.__window_length, self.__wavelet_scales, 1), grid=(1,1))
 
 
