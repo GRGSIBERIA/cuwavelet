@@ -14,6 +14,7 @@ class PyWavelet:
         self.__wavelet_length = []
         self.__window_length = window_length
         self.__fs = sampling_rate
+        self.__waveform = np.zeros(window_length)
 
         for interval in intervals:
             length = self.__fs / interval
@@ -29,9 +30,9 @@ class PyWavelet:
             self.__waveletsIm.append(im)
         
         self.__waveletsRe = np.array(self.__waveletsRe, dtype=np.float32)
-        self.__waveletsIm = np.array(self.__waveletsIm, dtype=np.float32)
-        self.__resultRe = np.zeros(self.__window_length, dtype=np.float32)
-        self.__resultIm = np.zeros(self.__window_length, dtype=np.float32)
+        self.__waveletsIm = np.copy(self.__waveletsRe)
+        self.__resultRe = np.zeros_like(shape=(self.__wavelet_scales, self.__window_length), dtype=np.float32)
+        self.__resultIm = np.copy(self.__resultRe)
 
         with open("./src/wavelet.cu", "rt") as f:
             s = f.read()
@@ -39,24 +40,30 @@ class PyWavelet:
         
         self.__func = self.__module.get_function("wavelet_transform")
 
-        self.__regpu = cuda.mem_alloc(self.__waveletsRe.nbytes)
-        self.__imgpu = cuda.mem_alloc(self.__waveletsIm.nbytes)
-        self.__resim = cuda.mem_alloc(self.__resultRe.nbytes)
-        self.__resre = cuda.mem_alloc(self.__resultIm.nbytes)
-
-        cuda.memcpy_htod(self.__regpu, self.__waveletsRe)
-        cuda.memcpy_htod(self.__imgpu, self.__waveletsIm)
-    
-    def __del__(self):
-        self.__regpu.free()
-        self.__imgpu.free()
-        self.__resim.free()
-        self.__resre.free()
     
     def compute(self, compute_waveform):
-        pass
+        # 循環リストの処理
+        target = None
+        if len(compute_waveform) > self.__window_length:
+            target = compute_waveform[len(compute_waveform) - self.__window_length:]
+        else:
+            if type(compute_waveform) == type(np.array([])):
+                target = np.concatenate(self.__waveform, compute_waveform)
+            elif type(compute_waveform) == type([]):
+                target += compute_waveform
+            target = target[len(compute_waveform):]
+        
+        if target == None:
+            raise TypeError(f"compute_waveform is not list or ndarray: {type(compute_waveform)}")
 
-            
+        self.__waveform = np.copy(target)
+
+        self.__func(
+            cuda.Out(self.__resultRe), cuda.Out(self.__resultIm),
+            cuda.In(self.__waveletsRe), cuda.In(self.__waveletsIm),
+            cuda.In(self.__waveform),
+            cuda.In(self.__window_length), cuda.In(self.__wavelet_scales),
+            block=(self.__window_length, self.__wavelet_scales, 1), grid=(1,1))
 
 
 if __name__ == "__main__":
