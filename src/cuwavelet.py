@@ -65,6 +65,7 @@ class PyWavelet:
 
         self.__waveform = np.copy(target)
 
+        # resultにWavelet変換の結果を出力する
         self.__func(
             cuda.Out(self.__resultRe), cuda.Out(self.__resultIm),
             cuda.Out(self.__resultAbs),
