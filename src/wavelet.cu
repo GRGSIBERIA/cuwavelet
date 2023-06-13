@@ -8,7 +8,7 @@
     @param[in] scaleN スケールの数
 */
 __global__ void wavelet_transform(
-        float* transformRe, float* transformIm,
+        float* transformRe, float* transformIm, float* transformAbs,
         float* waveletsRe, float* waveletsIm,
         float* waveform,
         int timeN, int scaleN
@@ -28,6 +28,7 @@ __global__ void wavelet_transform(
     
     transformRe[idx] = totalRe;
     transformIm[idx] = totalIm;
+    transformAbs[idx] = sqrt(totalRe*totalRe + totalIm*totalIm);
 }
 
 /*

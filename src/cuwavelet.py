@@ -33,6 +33,7 @@ class PyWavelet:
         self.__waveletsIm = np.copy(self.__waveletsRe)
         self.__resultRe = np.zeros_like(shape=(self.__wavelet_scales, self.__window_length), dtype=np.float32)
         self.__resultIm = np.copy(self.__resultRe)
+        self.__resultAbs = np.copy(self.__resultRe)
 
         with open("./src/wavelet.cu", "rt") as f:
             s = f.read()
@@ -66,10 +67,12 @@ class PyWavelet:
 
         self.__func(
             cuda.Out(self.__resultRe), cuda.Out(self.__resultIm),
+            cuda.Out(self.__resultAbs),
             self.__gpuRe, self.__gpuIm,
             cuda.In(self.__waveform),
             self.__gpu_window_length, self.__gpu_scale_size,
             block=(self.__window_length, self.__wavelet_scales, 1), grid=(1,1))
+        
 
 
 if __name__ == "__main__":
